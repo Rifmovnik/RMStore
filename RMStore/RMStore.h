@@ -31,6 +31,9 @@ extern NSInteger const RMStoreErrorCodeDownloadCanceled;
 extern NSInteger const RMStoreErrorCodeUnknownProductIdentifier;
 extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
 
+typedef void (^PaymentSuccessHandler)(SKPaymentTransaction *transaction);
+typedef void (^PaymentFailureHandler)(SKPaymentTransaction *transaction, NSError *error);
+
 /** A StoreKit wrapper that adds blocks and notifications, plus optional receipt verification and purchase management.
  */
 @interface RMStore : NSObject<SKPaymentTransactionObserver>
@@ -51,6 +54,14 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
 /** Returns whether the user is allowed to make payments.
  */
 + (BOOL)canMakePayments;
+
+// [NAK]
+- (BOOL)isAddingPayment:(NSString*)productIdentifier;
+- (BOOL)isDeferredPayment:(NSString*)productIdentifier;
+
+- (BOOL)hasAddingPayment;
+- (BOOL)hasDeferredPayment;
+// [NAK]
 
 /** Request payment of the product with the given product identifier.
  @param productIdentifier The identifier of the product whose payment will be requested.
@@ -112,6 +123,12 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
 - (void)restoreTransactionsOfUser:(NSString*)userIdentifier
                         onSuccess:(void (^)(NSArray *transactions))successBlock
                           failure:(void (^)(NSError *error))failureBlock __attribute__((availability(ios,introduced=7.0)));
+
+
+#pragma mark Promoting In-App Purchases (ios 11)
+
+@property (copy) PaymentSuccessHandler shouldAddStorePaymentSuccessHandler;
+@property (copy) PaymentFailureHandler shouldAddStorePaymentFailureHandler;
 
 #pragma mark Receipt
 ///---------------------------------------------
