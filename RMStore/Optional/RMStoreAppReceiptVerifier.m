@@ -21,23 +21,43 @@
 #import "RMStoreAppReceiptVerifier.h"
 #import "RMAppReceipt.h"
 
+const NSTimeInterval BundleReceiptUpdatingTimeInterval = 10.; // sec
+
+@interface RMStoreAppReceiptVerifier ()
+
+@property RMAppReceipt* bundleReceipt;
+@property NSDate* bundleReceiptUpdatingDate;
+
+@end
+
 @implementation RMStoreAppReceiptVerifier
 
 - (void)verifyTransaction:(SKPaymentTransaction*)transaction
                            success:(void (^)())successBlock
                            failure:(void (^)(NSError *error))failureBlock
 {
-    RMAppReceipt *receipt = [RMAppReceipt bundleReceipt];
+    RMAppReceipt *receipt = self.bundleReceipt;
     const BOOL verified = [self verifyTransaction:transaction inReceipt:receipt success:successBlock failure:nil]; // failureBlock is nil intentionally. See below.
     if (verified) return;
 
     // Apple recommends to refresh the receipt if validation fails on iOS
     [[RMStore defaultStore] refreshReceiptOnSuccess:^{
-        RMAppReceipt *receipt = [RMAppReceipt bundleReceipt];
+		self.bundleReceiptUpdatingDate = nil;
+        RMAppReceipt *receipt = self.bundleReceipt;
         [self verifyTransaction:transaction inReceipt:receipt success:successBlock failure:failureBlock];
     } failure:^(NSError *error) {
         [self failWithBlock:failureBlock error:error];
     }];
+}
+
+- (RMAppReceipt*)bundleReceipt
+{
+	if(_bundleReceipt && self.bundleReceiptUpdatingDate && [self.bundleReceiptUpdatingDate compare:[NSDate date]] == NSOrderedDescending) {
+		return _bundleReceipt;
+	}
+	self.bundleReceiptUpdatingDate = [NSDate dateWithTimeIntervalSinceNow:BundleReceiptUpdatingTimeInterval];
+	_bundleReceipt = [RMAppReceipt bundleReceipt];
+	return _bundleReceipt;
 }
 
 - (BOOL)verifyAppReceipt
