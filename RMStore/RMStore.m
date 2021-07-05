@@ -225,7 +225,7 @@ typedef void (^RMStoreSuccessBlock)();
            failure:(void (^)(SKPaymentTransaction *transaction, NSError *error))failureBlock
 {
 	if([self isAddingPayment:productIdentifier]) { // [NAK]
-		return; // [NAK] продукт в процессе покупки
+		return; // [NAK] РїСЂРѕРґСѓРєС‚ РІ РїСЂРѕС†РµСЃСЃРµ РїРѕРєСѓРїРєРё
 	}
     SKProduct *product = [self productForIdentifier:productIdentifier];
     if (product == nil)
@@ -397,7 +397,7 @@ typedef void (^RMStoreSuccessBlock)();
 {
 	NSString* productIdentifier = product.productIdentifier;
 	if([self isAddingPayment:productIdentifier]) {
-		return NO; // продукт уже покупается
+		return NO; // РїСЂРѕРґСѓРєС‚ РІ РїСЂРѕС†РµСЃСЃРµ РїРѕРєСѓРїРєРё
 	}
 	if(self.shouldAddStorePaymentSuccessHandler && self.shouldAddStorePaymentFailureHandler) {
 		RMAddPaymentParameters *parameters = [[RMAddPaymentParameters alloc] init];
@@ -408,6 +408,15 @@ typedef void (^RMStoreSuccessBlock)();
 	}
 	return NO;
 }
+
+/// iOS 14 [NAK]
+- (void)paymentQueue:(SKPaymentQueue *)queue didRevokeEntitlementsForProductIdentifiers:(NSArray<NSString *> *)productIdentifiers
+{
+	if(self.didRevokeEntitlementsForProductIdentifiersHandler) {
+		self.didRevokeEntitlementsForProductIdentifiersHandler(productIdentifiers);
+	}
+}
+
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions
 {
     for (SKPaymentTransaction *transaction in transactions)

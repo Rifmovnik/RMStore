@@ -33,6 +33,7 @@ extern NSInteger const RMStoreErrorCodeUnableToCompleteVerification;
 
 typedef void (^PaymentSuccessHandler)(SKPaymentTransaction *transaction);
 typedef void (^PaymentFailureHandler)(SKPaymentTransaction *transaction, NSError *error);
+typedef void (^ProductIdentifiersHandler)(NSArray<NSString*>* productIdentifiers);
 
 /** A StoreKit wrapper that adds blocks and notifications, plus optional receipt verification and purchase management.
  */
@@ -129,6 +130,7 @@ typedef void (^PaymentFailureHandler)(SKPaymentTransaction *transaction, NSError
 
 @property (copy) PaymentSuccessHandler shouldAddStorePaymentSuccessHandler;
 @property (copy) PaymentFailureHandler shouldAddStorePaymentFailureHandler;
+@property (copy) ProductIdentifiersHandler didRevokeEntitlementsForProductIdentifiersHandler;
 
 #pragma mark Receipt
 ///---------------------------------------------
